@@ -1,6 +1,6 @@
 'use client';
 
-import { GraduationCap, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Heart, Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 import Logo from './Logo';
 

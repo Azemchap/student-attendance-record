@@ -1,15 +1,14 @@
 // components/Attendance.tsx
 "use client"
 
-import { useState, useMemo } from 'react';
-import { Calendar, Search, Filter, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Header from '@/components/shared/Header';
 import TakeAttendanceModal from '@/components/sections/TakeAttendanceModal';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar, Filter, Plus, Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 const Attendance = () => {
     const [searchTerm, setSearchTerm] = useState('');

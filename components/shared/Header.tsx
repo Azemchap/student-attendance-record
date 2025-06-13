@@ -2,14 +2,14 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Moon, Sun, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Logo from './Logo';
+import React, { useEffect, useState } from 'react';
 import { useThemeContext } from '../theme-context';
+import Logo from './Logo';
 
 const Header: React.FC = React.memo(() => {
   const [mounted, setMounted] = useState(false);
