@@ -142,7 +142,7 @@ const Testimonials: React.FC<TestimonialsProps> = ({
 
                 {/* Content */}
                 <blockquote className="mb-8 text-xl leading-relaxed text-gray-700 dark:text-gray-200 sm:text-2xl">
-                  "{currentTestimonial.content}"
+                &quot;{currentTestimonial.content}&quot;
                 </blockquote>
 
                 {/* Author */}

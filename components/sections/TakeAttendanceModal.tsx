@@ -83,7 +83,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
     } else {
       setStudents([]);
     }
-  }, [selectedClassroom]);
+  }, [selectedClassroom, mockStudentsData]);
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -280,7 +280,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
                   <ul className="space-y-1 text-blue-700 text-xs sm:text-sm">
                     <li>• Students arriving after 8:30 AM are automatically marked as Late</li>
                     <li>• You can manually adjust arrival times if needed</li>
-                    <li>• Click "Present" to mark with current time, or manually set arrival time</li>
+                    <li>• Click &quot;Present&quot; to mark with current time, or manually set arrival time</li>
                   </ul>
                 </div>
               </div>

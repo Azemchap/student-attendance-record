@@ -13,7 +13,7 @@ const Hero = () => {
             <span className="text-primary block">Management System</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Streamline your school's attendance tracking with our intuitive,
+            Streamline your school&apos;s attendance tracking with our intuitive,
             digital solution designed for modern secondary schools.
           </p>
 

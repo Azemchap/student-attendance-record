@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Mail } from 'lucide-react';
+import { useState } from 'react';
 
 interface NewsletterProps {
   onSubscribe?: (email: string) => Promise<void>;
@@ -40,6 +40,7 @@ const Newsletter: React.FC<NewsletterProps> = ({ onSubscribe }) => {
       }, 4000);
     } catch (err) {
       setError('Failed to subscribe. Please try again.');
+      console.log(err)
     } finally {
       setIsLoading(false);
     }
