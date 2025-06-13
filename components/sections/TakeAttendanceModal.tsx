@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle, Clock, XCircle } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Classroom {
   id: string;
@@ -28,47 +28,47 @@ interface TakeAttendanceModalProps {
   classrooms: Classroom[];
 }
 
+// ✅ Move mock data outside component to prevent recreating on every render
+const MOCK_STUDENTS_DATA: Record<string, Student[]> = {
+  '10A': [
+    { id: 1, name: 'Alice Johnson' },
+    { id: 2, name: 'Bob Smith' },
+    { id: 5, name: 'Emma Brown' },
+    { id: 9, name: 'John Doe' },
+    { id: 10, name: 'Jane Wilson' },
+  ],
+  '10B': [
+    { id: 3, name: 'Carol Davis' },
+    { id: 4, name: 'David Wilson' },
+    { id: 11, name: 'Mike Johnson' },
+    { id: 12, name: 'Sarah Brown' },
+  ],
+  '11A': [
+    { id: 6, name: 'Frank Miller' },
+    { id: 7, name: 'Grace Lee' },
+    { id: 13, name: 'Tom Anderson' },
+    { id: 14, name: 'Lisa Chen' },
+  ],
+  '11B': [
+    { id: 8, name: 'Henry Chen' },
+    { id: 15, name: 'Amy Davis' },
+    { id: 16, name: 'Peter Parker' },
+  ],
+  '12A': [
+    { id: 17, name: 'Mary Johnson' },
+    { id: 18, name: 'Robert Brown' },
+    { id: 19, name: 'Jennifer Wilson' },
+  ],
+  '12B': [
+    { id: 20, name: 'Michael Davis' },
+    { id: 21, name: 'Jessica Miller' },
+    { id: 22, name: 'Christopher Lee' },
+  ],
+};
+
 const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: TakeAttendanceModalProps) => {
   const [selectedClassroom, setSelectedClassroom] = useState(defaultClassroom || '');
   const [students, setStudents] = useState<Student[]>([]);
-
-  // ✅ Move mockStudentsData outside or use useMemo to prevent recreation
-  const mockStudentsData: Record<string, Student[]> = useMemo(() => ({
-    '10A': [
-      { id: 1, name: 'Alice Johnson' },
-      { id: 2, name: 'Bob Smith' },
-      { id: 5, name: 'Emma Brown' },
-      { id: 9, name: 'John Doe' },
-      { id: 10, name: 'Jane Wilson' },
-    ],
-    '10B': [
-      { id: 3, name: 'Carol Davis' },
-      { id: 4, name: 'David Wilson' },
-      { id: 11, name: 'Mike Johnson' },
-      { id: 12, name: 'Sarah Brown' },
-    ],
-    '11A': [
-      { id: 6, name: 'Frank Miller' },
-      { id: 7, name: 'Grace Lee' },
-      { id: 13, name: 'Tom Anderson' },
-      { id: 14, name: 'Lisa Chen' },
-    ],
-    '11B': [
-      { id: 8, name: 'Henry Chen' },
-      { id: 15, name: 'Amy Davis' },
-      { id: 16, name: 'Peter Parker' },
-    ],
-    '12A': [
-      { id: 17, name: 'Mary Johnson' },
-      { id: 18, name: 'Robert Brown' },
-      { id: 19, name: 'Jennifer Wilson' },
-    ],
-    '12B': [
-      { id: 20, name: 'Michael Davis' },
-      { id: 21, name: 'Jessica Miller' },
-      { id: 22, name: 'Christopher Lee' },
-    ],
-  }), []); // ✅ Empty dependency array since this data is static
 
   useEffect(() => {
     if (defaultClassroom) {
@@ -76,10 +76,10 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
     }
   }, [defaultClassroom]);
 
-  // ✅ Fixed useEffect - removed mockStudentsData from dependencies
+  // ✅ Fixed useEffect - now uses external constant, no dependency issues
   useEffect(() => {
-    if (selectedClassroom && mockStudentsData[selectedClassroom]) {
-      setStudents(mockStudentsData[selectedClassroom].map(student => ({
+    if (selectedClassroom && MOCK_STUDENTS_DATA[selectedClassroom]) {
+      setStudents(MOCK_STUDENTS_DATA[selectedClassroom].map(student => ({
         ...student,
         status: undefined,
         arrivalTime: undefined
@@ -160,7 +160,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
 
   // Get the actual student count for each classroom
   const getActualStudentCount = (classroomId: string) => {
-    return mockStudentsData[classroomId]?.length || 0;
+    return MOCK_STUDENTS_DATA[classroomId]?.length || 0;
   };
 
   return (
