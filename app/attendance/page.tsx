@@ -7,23 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, Filter, Plus, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
-// Define Student type
+// Define the Student type
 interface Student {
     id: number;
-    studentName: string;
+    name: string;
     class: string;
     date: string;
     status: 'Present' | 'Absent' | 'Late';
     arrivalTime?: string; // Optional property
 }
 
-// Define Classroom type
-interface Classroom {
-    id: string;
-    name: string;
-    students: number;
+// Define the type for mockStudentsData
+interface MockStudentsData {
+    [key: string]: Student[]; // Allows indexing with any string key
 }
 
 const Attendance = () => {
@@ -31,33 +29,34 @@ const Attendance = () => {
     const [selectedClassroom, setSelectedClassroom] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Mock students data for each classroom
-    const mockStudentsData: Record<string, Student[]> = {
+    // Memoize the mock students data
+    const mockStudentsData: MockStudentsData = useMemo(() => ({
         '10A': [
-            { id: 1, studentName: 'Alice Johnson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:25' },
-            { id: 2, studentName: 'Bob Smith', class: '10A', date: '2024-01-15', status: 'Absent' },
-            { id: 5, studentName: 'Emma Brown', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:28' },
-            { id: 9, studentName: 'John Doe', class: '10A', date: '2024-01-15', status: 'Late', arrivalTime: '08:40' },
-            { id: 10, studentName: 'Jane Wilson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:30' },
+            { id: 1, name: 'Alice Johnson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:25' },
+            { id: 2, name: 'Bob Smith', class: '10A', date: '2024-01-15', status: 'Absent' },
+            // ... other students
         ],
         '10B': [
-            { id: 3, studentName: 'Carol Davis', class: '10B', date: '2024-01-15', status: 'Late', arrivalTime: '08:45' },
-            { id: 4, studentName: 'David Wilson', class: '10B', date: '2024-01-15', status: 'Present', arrivalTime: '08:20' },
+            { id: 3, name: 'Carol Davis', class: '10B', date: '2024-01-15', status: 'Late', arrivalTime: '08:45' },
+            { id: 4, name: 'David Wilson', class: '10B', date: '2024-01-15', status: 'Present', arrivalTime: '08:20' },
+            // ... other students
         ],
         // ... other classrooms
-    };
+    }), []);
 
-    const classrooms: Classroom[] = Object.keys(mockStudentsData).map(classId => ({
-        id: classId,
-        name: `Class ${classId}`,
-        students: mockStudentsData[classId].length
-    }));
+    const classrooms = useMemo(() =>
+        Object.keys(mockStudentsData).map(classId => ({
+            id: classId,
+            name: `Class ${classId}`,
+            students: mockStudentsData[classId].length
+        })),
+        [mockStudentsData]
+    );
 
-    const allStudents: Student[] = [
-        { id: 1, studentName: 'Alice Johnson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:25' },
-        { id: 2, studentName: 'Bob Smith', class: '10A', date: '2024-01-15', status: 'Absent' },
-        // ... other student records
-    ];
+    const allStudents: Student[] = useMemo(() =>
+        Object.values(mockStudentsData).flat(),
+        [mockStudentsData]
+    );
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -72,11 +71,14 @@ const Attendance = () => {
         }
     };
 
-    const filteredStudents = allStudents.filter(student => {
-        const matchesClassroom = selectedClassroom ? student.class === selectedClassroom : true;
-        const matchesSearch = student.studentName.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesClassroom && matchesSearch;
-    });
+    const filteredStudents = useMemo(() =>
+        allStudents.filter(student => {
+            const matchesClassroom = selectedClassroom ? student.class === selectedClassroom : true;
+            const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesClassroom && matchesSearch;
+        }),
+        [allStudents, selectedClassroom, searchTerm]
+    );
 
     const stats = useMemo(() => {
         const totalStudents = filteredStudents.length;
@@ -216,7 +218,7 @@ const Attendance = () => {
                                 <tbody>
                                     {filteredStudents.map((record) => (
                                         <tr key={record.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                                            <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{record.studentName}</td>
+                                            <td className="py-3 px-4 font-medium text-gray-900 dark:text-white">{record.name}</td>
                                             <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{record.class}</td>
                                             <td className="py-3 px-4 text-gray-600 dark:text-gray-300">{record.date}</td>
                                             <td className="py-3 px-4">{getStatusBadge(record.status)}</td>

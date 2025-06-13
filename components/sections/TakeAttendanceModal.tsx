@@ -1,4 +1,3 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CheckCircle, Clock, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface Classroom {
   id: string;
@@ -33,8 +32,8 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
   const [selectedClassroom, setSelectedClassroom] = useState(defaultClassroom || '');
   const [students, setStudents] = useState<Student[]>([]);
 
-  // Mock students data for each classroom
-  const mockStudentsData: Record<string, Student[]> = {
+  // ✅ Move mockStudentsData outside or use useMemo to prevent recreation
+  const mockStudentsData: Record<string, Student[]> = useMemo(() => ({
     '10A': [
       { id: 1, name: 'Alice Johnson' },
       { id: 2, name: 'Bob Smith' },
@@ -69,7 +68,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
       { id: 21, name: 'Jessica Miller' },
       { id: 22, name: 'Christopher Lee' },
     ],
-  };
+  }), []); // ✅ Empty dependency array since this data is static
 
   useEffect(() => {
     if (defaultClassroom) {
@@ -77,13 +76,18 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
     }
   }, [defaultClassroom]);
 
+  // ✅ Fixed useEffect - removed mockStudentsData from dependencies
   useEffect(() => {
     if (selectedClassroom && mockStudentsData[selectedClassroom]) {
-      setStudents(mockStudentsData[selectedClassroom].map(student => ({ ...student, status: undefined, arrivalTime: undefined })));
+      setStudents(mockStudentsData[selectedClassroom].map(student => ({
+        ...student,
+        status: undefined,
+        arrivalTime: undefined
+      })));
     } else {
       setStudents([]);
     }
-  }, [selectedClassroom, mockStudentsData]);
+  }, [selectedClassroom]); // ✅ Only depend on selectedClassroom
 
   const getCurrentTime = () => {
     const now = new Date();
@@ -96,7 +100,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
 
   const updateStudentStatus = (studentId: number, status: 'Present' | 'Absent' | 'Late') => {
     const currentTime = getCurrentTime();
-    
+
     setStudents(prev => prev.map(student => {
       if (student.id === studentId) {
         if (status === 'Present') {
@@ -165,7 +169,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl sm:text-2xl">Take Attendance</DialogTitle>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto space-y-4 sm:space-y-6">
           {/* Classroom Selection */}
           <div className="space-y-2">
@@ -208,7 +212,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Controls */}
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sm:items-center">
                           {/* Arrival Time Input */}
@@ -227,7 +231,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
                               />
                             </div>
                           )}
-                          
+
                           {/* Status Buttons */}
                           <div className="flex gap-1 sm:gap-2">
                             <Button
@@ -293,7 +297,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
           <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSaveAttendance}
             disabled={!selectedClassroom || students.length === 0}
             className="w-full sm:w-auto"
