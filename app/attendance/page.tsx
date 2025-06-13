@@ -1,5 +1,4 @@
-// components/Attendance.tsx
-"use client"
+"use client";
 
 import TakeAttendanceModal from '@/components/sections/TakeAttendanceModal';
 import { Badge } from '@/components/ui/badge';
@@ -10,37 +9,51 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Calendar, Filter, Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+// Define Student type
+interface Student {
+    id: number;
+    studentName: string;
+    class: string;
+    date: string;
+    status: 'Present' | 'Absent' | 'Late';
+    arrivalTime?: string; // Optional property
+}
+
+// Define Classroom type
+interface Classroom {
+    id: string;
+    name: string;
+    students: number;
+}
+
 const Attendance = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedClassroom, setSelectedClassroom] = useState('');
+    const [selectedClassroom, setSelectedClassroom] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Mock students data for each classroom
-    const mockStudentsData: Record<string, any[]> = {
+    const mockStudentsData: Record<string, Student[]> = {
         '10A': [
-            { id: 1, name: 'Alice Johnson' },
-            { id: 2, name: 'Bob Smith' },
-            { id: 5, name: 'Emma Brown' },
-            { id: 9, name: 'John Doe' },
-            { id: 10, name: 'Jane Wilson' },
+            { id: 1, studentName: 'Alice Johnson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:25' },
+            { id: 2, studentName: 'Bob Smith', class: '10A', date: '2024-01-15', status: 'Absent' },
+            { id: 5, studentName: 'Emma Brown', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:28' },
+            { id: 9, studentName: 'John Doe', class: '10A', date: '2024-01-15', status: 'Late', arrivalTime: '08:40' },
+            { id: 10, studentName: 'Jane Wilson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:30' },
         ],
         '10B': [
-            { id: 3, name: 'Carol Davis' },
-            { id: 4, name: 'David Wilson' },
-            { id: 11, name: 'Mike Johnson' },
-            { id: 12, name: 'Sarah Brown' },
+            { id: 3, studentName: 'Carol Davis', class: '10B', date: '2024-01-15', status: 'Late', arrivalTime: '08:45' },
+            { id: 4, studentName: 'David Wilson', class: '10B', date: '2024-01-15', status: 'Present', arrivalTime: '08:20' },
         ],
         // ... other classrooms
     };
 
-    const classrooms = Object.keys(mockStudentsData).map(classId => ({
+    const classrooms: Classroom[] = Object.keys(mockStudentsData).map(classId => ({
         id: classId,
         name: `Class ${classId}`,
         students: mockStudentsData[classId].length
     }));
 
-    const allStudents = [
-        // Mock data for students
+    const allStudents: Student[] = [
         { id: 1, studentName: 'Alice Johnson', class: '10A', date: '2024-01-15', status: 'Present', arrivalTime: '08:25' },
         { id: 2, studentName: 'Bob Smith', class: '10A', date: '2024-01-15', status: 'Absent' },
         // ... other student records

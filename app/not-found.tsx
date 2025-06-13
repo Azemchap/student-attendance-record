@@ -1,10 +1,10 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Home } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Home, ArrowLeft, Search, BookOpen, Users, Calendar, AlertTriangle } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
 const NotFound = () => {
     const pathname = usePathname();
@@ -60,7 +60,7 @@ const NotFound = () => {
                         Oops! Page Not Found
                     </h2>
                     <p className="text-md text-muted-foreground mb-2 max-w-md mx-auto">
-                        The page you're looking for doesn't exist or has been moved to a different location.
+                        The page you&apos;'re looking for doesn&apos;'t exist or has been moved to a different location.
                     </p>
                     {/* <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full text-sm text-muted-foreground">
                         <Search className="h-4 w-4" />
