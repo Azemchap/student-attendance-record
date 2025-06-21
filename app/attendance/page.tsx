@@ -71,12 +71,12 @@ const SHARED_MOCK_DATA = {
 const Attendance = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClassroom, setSelectedClassroom] = useState<string>('all');
+    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [attendanceRecords, setAttendanceRecords] = useState<Student[]>([]);
 
     // Generate mock attendance data with sample statuses
     const mockStudentsData: MockStudentsData = useMemo(() => {
-        const currentDate = new Date().toISOString().split('T')[0];
         const result: MockStudentsData = {};
 
         Object.entries(SHARED_MOCK_DATA).forEach(([className, students]) => {
@@ -88,14 +88,14 @@ const Attendance = () => {
                 return {
                     ...student,
                     class: className,
-                    date: currentDate,
+                    date: selectedDate,
                     status: randomStatus
                 };
             });
         });
 
         return result;
-    }, []);
+    }, [selectedDate]);
 
     const classrooms = useMemo(() =>
         Object.keys(mockStudentsData).map(classId => ({
@@ -146,9 +146,10 @@ const Attendance = () => {
         allStudents.filter(student => {
             const matchesClassroom = selectedClassroom === 'all' ? true : student.class === selectedClassroom;
             const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesClassroom && matchesSearch;
+            const matchesDate = student.date === selectedDate;
+            return matchesClassroom && matchesSearch && matchesDate;
         }),
-        [allStudents, selectedClassroom, searchTerm]
+        [allStudents, selectedClassroom, searchTerm, selectedDate]
     );
 
     const stats = useMemo(() => {
@@ -171,17 +172,16 @@ const Attendance = () => {
 
     const handleAttendanceSaved = (classroomId: string, studentAttendance: any[]) => {
         // Update the attendance records with the new data
-        const currentDate = new Date().toISOString().split('T')[0];
         const newRecords = studentAttendance.map(student => ({
             ...student,
             class: classroomId,
-            date: currentDate
+            date: selectedDate
         }));
 
         // Here you would typically save to a database
         console.log('Attendance saved for', classroomId, ':', newRecords);
         setAttendanceRecords(prev => [
-            ...prev.filter(record => record.class !== classroomId || record.date !== currentDate),
+            ...prev.filter(record => record.class !== classroomId || record.date !== selectedDate),
             ...newRecords
         ]);
     };
@@ -235,7 +235,7 @@ const Attendance = () => {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Present Today</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Present</p>
                                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.present}</p>
                                 </div>
                                 <div className="bg-green-100 dark:bg-green-900/20 rounded-full p-3">
@@ -249,7 +249,7 @@ const Attendance = () => {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Absent Today</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Absent</p>
                                     <p className="text-3xl font-bold text-red-600 dark:text-red-400">{stats.absent}</p>
                                 </div>
                                 <div className="bg-red-100 dark:bg-red-900/20 rounded-full p-3">
@@ -263,7 +263,7 @@ const Attendance = () => {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Late Today</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Late</p>
                                     <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.late}</p>
                                 </div>
                                 <div className="bg-yellow-100 dark:bg-yellow-900/20 rounded-full p-3">
@@ -277,7 +277,7 @@ const Attendance = () => {
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Excused Today</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Excused</p>
                                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.excused}</p>
                                 </div>
                                 <div className="bg-blue-100 dark:bg-blue-900/20 rounded-full p-3">
@@ -310,19 +310,27 @@ const Attendance = () => {
                 <Card className="hover:shadow-md transition-shadow">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                         <CardTitle>Attendance Records</CardTitle>
-                        <Select value={selectedClassroom} onValueChange={setSelectedClassroom}>
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Select classroom" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Classrooms</SelectItem>
-                                {classrooms.map((classroom, index) => (
-                                    <SelectItem key={index} value={classroom.id}>
-                                        {classroom.name} ({classroom.students} students)
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                            <Input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="w-40"
+                            />
+                            <Select value={selectedClassroom} onValueChange={setSelectedClassroom}>
+                                <SelectTrigger className="w-48">
+                                    <SelectValue placeholder="Select classroom" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Classrooms</SelectItem>
+                                    {classrooms.map((classroom, index) => (
+                                        <SelectItem key={index} value={classroom.id}>
+                                            {classroom.name} ({classroom.students} students)
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
@@ -331,7 +339,6 @@ const Attendance = () => {
                                     <tr className="border-b border-border">
                                         <th className="text-left py-3 px-4 font-medium text-foreground">Student Name</th>
                                         <th className="text-left py-3 px-4 font-medium text-foreground">Class</th>
-                                        <th className="text-left py-3 px-4 font-medium text-foreground">Date</th>
                                         <th className="text-left py-3 px-4 font-medium text-foreground">Status</th>
                                     </tr>
                                 </thead>
@@ -340,7 +347,6 @@ const Attendance = () => {
                                         <tr key={index} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
                                             <td className="py-3 px-4 font-medium text-foreground">{record.name}</td>
                                             <td className="py-3 px-4 text-muted-foreground">{record.class}</td>
-                                            <td className="py-3 px-4 text-muted-foreground">{record.date}</td>
                                             <td className="py-3 px-4">{getStatusBadge(record.status)}</td>
                                         </tr>
                                     ))}
@@ -348,7 +354,7 @@ const Attendance = () => {
                             </table>
                             {filteredStudents.length === 0 && (
                                 <div className="text-center py-8 text-muted-foreground">
-                                    No students found for the selected class
+                                    No attendance records found for the selected date and class
                                 </div>
                             )}
                         </div>
