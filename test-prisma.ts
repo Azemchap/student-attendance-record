@@ -1,7 +1,7 @@
-// test-prisma.js - Run this file to test your Prisma connection
-// Run with: node test-prisma.js
+// test-prisma.ts - Run this file to test your Prisma connection
+// Run with: npx tsx test-prisma.ts or ts-node test-prisma.ts
 
-import { prisma } from './lib/prisma.js';
+import { prisma } from './lib/prisma';
 
 async function testPrisma() {
     try {
@@ -23,7 +23,7 @@ async function testPrisma() {
     } catch (error) {
         console.error('❌ Error testing Prisma:', error);
         console.error('Error type:', typeof error);
-        console.error('Error message:', error?.message || 'No message');
+        console.error('Error message:', error instanceof Error ? error.message : 'No message');
     }
 }
 

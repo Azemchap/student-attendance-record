@@ -13,34 +13,63 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model Classroom {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  teacher      String
-  color        String    @default("bg-blue-500")
-  description  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
-  // Relation to students
-  students     Student[]
-  
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  teacher     String
+  color       String   @default("bg-blue-500")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  students    Student[]
+  attendances Attendance[]
+
   @@map("classrooms")
 }
 
 model Student {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  firstName    String
-  lastName     String
-  email        String     @unique
-  studentId    String     @unique
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName String
+  lastName  String
+  email     String   @unique
+  studentId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Foreign key to classroom
-  classroomId  String     @db.ObjectId
-  classroom    Classroom  @relation(fields: [classroomId], references: [id], onDelete: Cascade)
-  
+  classroomId String    @db.ObjectId
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  // Relations
+  attendances Attendance[]
+
   @@map("students")
+}
+
+model Attendance {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  date      DateTime
+  status    AttendanceStatus
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Foreign keys
+  studentId String  @db.ObjectId
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  classroomId String    @db.ObjectId
+  classroom   Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  // Ensure one attendance record per student per day
+  @@unique([studentId, date])
+  @@map("attendances")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
 }
