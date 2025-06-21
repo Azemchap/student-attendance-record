@@ -1,41 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookOpen, Plus, Settings, Users, Loader2 } from 'lucide-react';
+import { BookOpen, Plus, Settings, Users, Loader2, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import CreateClassroomForm from './CreateClassroomForm';
-
-interface Classroom {
-    id: string;
-    name: string;
-    teacher: string;
-    subject: string;
-    schedule?: string;
-    color: string;
-    description?: string;
-    _count: {
-        students: number;
-    };
-}
+import { getClassrooms, type Classroom } from '../app/actions/classroom-actions';
+import { formatDistanceToNow } from 'date-fns';
 
 const Classrooms = () => {
     const [classrooms, setClassrooms] = useState<Classroom[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     const fetchClassrooms = async () => {
         try {
-            const response = await fetch('/api/classrooms');
-            if (response.ok) {
-                const data = await response.json();
+            startTransition(async () => {
+                const data = await getClassrooms();
                 setClassrooms(data);
-            }
+                setIsLoading(false);
+            });
         } catch (error) {
             console.error('Error fetching classrooms:', error);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -64,12 +53,15 @@ const Classrooms = () => {
                 {/* Page Header */}
                 <div className="flex flex-col gap-2 justify-between sm:flex-row sm:items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Classrooms</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                            Classrooms {isPending && <Loader2 className="inline h-6 w-6 animate-spin ml-2" />}
+                        </h1>
                         <p className="text-gray-600 dark:text-gray-300">Manage your classes and students</p>
                     </div>
                     <Button
                         onClick={() => setShowCreateForm(true)}
                         className="flex items-center gap-2"
+                        disabled={isPending}
                     >
                         <Plus className="h-4 w-4" />
                         Add New Classroom
@@ -129,7 +121,7 @@ const Classrooms = () => {
                         <p className="text-gray-600 dark:text-gray-300 mb-6">
                             Get started by creating your first classroom
                         </p>
-                        <Button onClick={() => setShowCreateForm(true)}>
+                        <Button onClick={() => setShowCreateForm(true)} disabled={isPending}>
                             <Plus className="h-4 w-4 mr-2" />
                             Create First Classroom
                         </Button>
@@ -140,7 +132,7 @@ const Classrooms = () => {
                             <Card key={classroom.id} className="hover:shadow-lg transition-shadow duration-300 dark:bg-gray-800">
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
-                                        <div className={`w-4 h-4 rounded-full ${classroom.color}`}></div>
+                                        <div className="w-4 h-4 rounded-full bg-blue-500"></div>
                                         <Button variant="ghost" size="sm" className="p-1">
                                             <Settings className="h-4 w-4" />
                                         </Button>
@@ -150,21 +142,14 @@ const Classrooms = () => {
 
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300">Teacher</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">{classroom.teacher}</p>
-                                    </div>
-
-                                    <div>
-                                        <p className="text-sm text-gray-600 dark:text-gray-300">Subject</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">{classroom.subject}</p>
-                                    </div>
-
-                                    {classroom.schedule && (
-                                        <div>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">Schedule</p>
-                                            <p className="font-medium text-gray-900 dark:text-white">{classroom.schedule}</p>
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">Created</p>
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="h-4 w-4 text-gray-500" />
+                                            <p className="font-medium text-gray-900 dark:text-white">
+                                                {formatDistanceToNow(new Date(classroom.createdAt), { addSuffix: true })}
+                                            </p>
                                         </div>
-                                    )}
+                                    </div>
 
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
                                         <div className="flex items-center space-x-2">
@@ -180,6 +165,11 @@ const Classrooms = () => {
                                                     View Students
                                                 </Button>
                                             </Link>
+                                            <Link href={`/classrooms/${classroom.id}/attendance`}>
+                                                <Button variant="outline" size="sm">
+                                                    Attendance
+                                                </Button>
+                                            </Link>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -192,7 +182,10 @@ const Classrooms = () => {
                 {showCreateForm && (
                     <CreateClassroomForm
                         onClose={() => setShowCreateForm(false)}
-                        onSuccess={() => fetchClassrooms()}
+                        onSuccess={() => {
+                            fetchClassrooms();
+                            setShowCreateForm(false);
+                        }}
                     />
                 )}
             </div>

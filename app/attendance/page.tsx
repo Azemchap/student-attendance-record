@@ -30,24 +30,24 @@ const Attendance = () => {
 
     // Memoize the mock students data
     const mockStudentsData: MockStudentsData = useMemo(() => ({
-        'FORM 1': [
+        'FORM 1A': [
             { id: 1, name: 'Alice Johnson', class: 'FORM 1A', date: '2024-01-15', status: 'Present' },
             { id: 2, name: 'Bob Smith', class: 'FORM 1A', date: '2024-01-15', status: 'Absent' },
-            { id: 5, name: 'Emma Brown', class: 'FORM 1B', date: '2024-01-15', status: 'Late' },
-            { id: 9, name: 'John Doe', class: 'FORM 1B', date: '2024-01-15', status: 'Present' },
-            { id: 10, name: 'Jane Wilson', class: 'FORM 1B', date: '2024-01-15', status: 'Absent' },
+            { id: 5, name: 'Emma Brown', class: 'FORM 1A', date: '2024-01-15', status: 'Late' },
+            { id: 9, name: 'John Doe', class: 'FORM 1A', date: '2024-01-15', status: 'Present' },
+            { id: 10, name: 'Jane Wilson', class: 'FORM 1A', date: '2024-01-15', status: 'Absent' },
         ],
-        'FORM 2': [
+        'FORM 2A': [
             { id: 3, name: 'Carol Davis', class: 'FORM 2A', date: '2024-01-15', status: 'Late' },
             { id: 4, name: 'David Wilson', class: 'FORM 2A', date: '2024-01-15', status: 'Present' },
-            { id: 11, name: 'Mike Johnson', class: 'FORM 2B', date: '2024-01-15', status: 'Present' },
-            { id: 12, name: 'Sarah Brown', class: 'FORM 2B', date: '2024-01-15', status: 'Absent' },
+            { id: 11, name: 'Mike Johnson', class: 'FORM 2A', date: '2024-01-15', status: 'Present' },
+            { id: 12, name: 'Sarah Brown', class: 'FORM 2A', date: '2024-01-15', status: 'Absent' },
         ],
-        'FORM 3': [
+        'FORM 3A': [
             { id: 3, name: 'Carol Davis', class: 'FORM 3A', date: '2024-01-15', status: 'Late' },
             { id: 4, name: 'David Wilson', class: 'FORM 3A', date: '2024-01-15', status: 'Present' },
-            { id: 11, name: 'Mike Johnson', class: 'FORM 3B', date: '2024-01-15', status: 'Present' },
-            { id: 12, name: 'Sarah Brown', class: 'FORM 3B', date: '2024-01-15', status: 'Absent' },
+            { id: 11, name: 'Mike Johnson', class: 'FORM 3A', date: '2024-01-15', status: 'Present' },
+            { id: 12, name: 'Sarah Brown', class: 'FORM 3A', date: '2024-01-15', status: 'Absent' },
         ],
         'FORM 4B': [
             { id: 6, name: 'Frank Miller', class: 'FORM 4B', date: '2024-01-15', status: 'Present' },
