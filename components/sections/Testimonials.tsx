@@ -25,30 +25,30 @@ interface TestimonialsProps {
 const defaultTestimonials: Testimonial[] = [
   {
     id: '1',
-    name: 'Sarah Johnson',
+    name: 'Mr John Ngallah Francline',
     role: 'Principal',
-    institution: 'Lincoln High School',
+    institution: 'CCAST BAMBILI',
     content: 'This attendance system has revolutionized how we manage our students. The real-time tracking and automated reports save us hours every week.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=128&h=128&fit=crop&crop=face'
+    avatar: '/images/mikhail.jpg'
   },
   {
     id: '2',
-    name: 'Michael Chen',
+    name: 'Mme Nkeng Olivia Nguani',
     role: 'Mathematics Teacher',
-    institution: 'Roosevelt Elementary',
+    institution: 'CCAST BAMBILI',
     content: 'As a teacher, I love how easy it is to take attendance. The interface is intuitive and the notifications keep me informed about student patterns.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=face'
+    avatar: '/images/safari.jpg'
   },
   {
     id: '3',
-    name: 'Emily Rodriguez',
+    name: 'Miss Blandine Tita Fokum',
     role: 'Vice Principal',
-    institution: 'Oak Valley Academy',
+    institution: 'CCAST BAMBILI',
     content: 'The analytics features provide incredible insights into attendance patterns. We can now identify and address issues before they become problems.',
     rating: 5,
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=128&h=128&fit=crop&crop=face'
+    avatar: '/images/shvetsa.jpg'
   }
 ];
 

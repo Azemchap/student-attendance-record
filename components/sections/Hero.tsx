@@ -2,28 +2,26 @@
 
 import { CheckCircle, Users, BarChart3, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-900 dark:via-gray-800 dark:to-indigo-900 py-20">
+    <section className="relative bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-900 dark:via-gray-800 dark:to-indigo-900 pt-32 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-            Modern Attendance
-            <span className="text-primary block">Management System</span>
+            Modern Student Attendance
+            <span className="text-primary block">Tracking System</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-            Streamline your school&apos;s attendance tracking with our intuitive,
+            Streamline your school&apos;s students attendance tracking with our intuitive,
             digital solution designed for modern secondary schools.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button size="lg" className="px-8 py-3 text-lg">
-              Get Started
-            </Button>
-            <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-              Watch Demo
-            </Button>
+            <Link href={'/attendance'}>
+              <Button size="lg" className="px-8 py-3 text-lg">Get Started</Button>
+            </Link>
           </div>
 
           {/* Stats */}

@@ -68,7 +68,7 @@ const Newsletter: React.FC<NewsletterProps> = ({ onSubscribe }) => {
           {/* Description */}
           <p className="mx-auto mb-8 max-w-2xl text-lg text-blue-100 sm:text-xl lg:mb-10">
             Get notified about new features, updates, and best practices for
-            attendance management in educational institutions.
+            student attendance tracking in educational institutions.
           </p>
 
           {/* Form Container */}

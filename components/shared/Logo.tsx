@@ -10,7 +10,7 @@ export default function Logo() {
                 <GraduationCap className="h-6 w-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-200">
-                Student Tracker
+                <span className="hidden sm:flex">Student Attendance Tracker</span> <span className="sm:hidden">STAT</span>
             </span>
         </Link>
     )

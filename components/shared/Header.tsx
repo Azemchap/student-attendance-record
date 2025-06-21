@@ -38,7 +38,7 @@ const Header: React.FC = React.memo(() => {
 
   return (
     <header className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container px-4">
         <div className="flex justify-between items-center h-16">
           <Logo />
           {/* Desktop Navigation */}
