@@ -110,7 +110,7 @@ export async function createClassroom(
         if (existingClassroom) {
             return {
                 success: false,
-                error: 'A classroom with this name already exists in the db',
+                error: 'A classroom with this name already exists',
                 fieldErrors: {
                     name: ['This classroom name is already taken'],
                 },
