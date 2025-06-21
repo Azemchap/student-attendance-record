@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, Clock, XCircle, Users, AlertCircle } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, Users, AlertCircle, BookOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Classroom {
@@ -15,7 +15,7 @@ interface Classroom {
 interface Student {
   id: number;
   name: string;
-  status?: 'Present' | 'Absent' | 'Late';
+  status?: 'Present' | 'Absent' | 'Late' | 'Excused';
 }
 
 interface TakeAttendanceModalProps {
@@ -23,47 +23,18 @@ interface TakeAttendanceModalProps {
   onClose: () => void;
   defaultClassroom?: string;
   classrooms: Classroom[];
+  mockStudentsData: Record<string, { id: number; name: string }[]>;
+  onAttendanceSaved?: (classroomId: string, students: Student[]) => void;
 }
 
-// Mock data outside component to prevent recreating on every render
-const MOCK_STUDENTS_DATA: Record<string, Student[]> = {
-  '10A': [
-    { id: 1, name: 'Alice Johnson' },
-    { id: 2, name: 'Bob Smith' },
-    { id: 5, name: 'Emma Brown' },
-    { id: 9, name: 'John Doe' },
-    { id: 10, name: 'Jane Wilson' },
-  ],
-  '10B': [
-    { id: 3, name: 'Carol Davis' },
-    { id: 4, name: 'David Wilson' },
-    { id: 11, name: 'Mike Johnson' },
-    { id: 12, name: 'Sarah Brown' },
-  ],
-  '11A': [
-    { id: 6, name: 'Frank Miller' },
-    { id: 7, name: 'Grace Lee' },
-    { id: 13, name: 'Tom Anderson' },
-    { id: 14, name: 'Lisa Chen' },
-  ],
-  '11B': [
-    { id: 8, name: 'Henry Chen' },
-    { id: 15, name: 'Amy Davis' },
-    { id: 16, name: 'Peter Parker' },
-  ],
-  '12A': [
-    { id: 17, name: 'Mary Johnson' },
-    { id: 18, name: 'Robert Brown' },
-    { id: 19, name: 'Jennifer Wilson' },
-  ],
-  '12B': [
-    { id: 20, name: 'Michael Davis' },
-    { id: 21, name: 'Jessica Miller' },
-    { id: 22, name: 'Christopher Lee' },
-  ],
-};
-
-const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: TakeAttendanceModalProps) => {
+const TakeAttendanceModal = ({
+  isOpen,
+  onClose,
+  defaultClassroom,
+  classrooms,
+  mockStudentsData,
+  onAttendanceSaved
+}: TakeAttendanceModalProps) => {
   const [selectedClassroom, setSelectedClassroom] = useState(defaultClassroom || '');
   const [students, setStudents] = useState<Student[]>([]);
 
@@ -74,25 +45,30 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
   }, [defaultClassroom]);
 
   useEffect(() => {
-    if (selectedClassroom && MOCK_STUDENTS_DATA[selectedClassroom]) {
-      setStudents(MOCK_STUDENTS_DATA[selectedClassroom].map(student => ({
+    if (selectedClassroom && mockStudentsData[selectedClassroom]) {
+      setStudents(mockStudentsData[selectedClassroom].map(student => ({
         ...student,
         status: undefined
       })));
     } else {
       setStudents([]);
     }
-  }, [selectedClassroom]);
+  }, [selectedClassroom, mockStudentsData]);
 
-  const updateStudentStatus = (studentId: number, status: 'Present' | 'Absent' | 'Late') => {
+  const updateStudentStatus = (studentId: number, status: 'Present' | 'Absent' | 'Late' | 'Excused') => {
     setStudents(prev => prev.map(student =>
       student.id === studentId ? { ...student, status } : student
     ));
   };
 
   const handleSaveAttendance = () => {
-    // Here you would typically save the attendance data
-    console.log('Saving attendance for classroom:', selectedClassroom, 'Students:', students);
+    if (onAttendanceSaved && selectedClassroom) {
+      onAttendanceSaved(selectedClassroom, students);
+    }
+
+    // Reset form
+    setStudents([]);
+    setSelectedClassroom('');
     onClose();
   };
 
@@ -104,6 +80,8 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
         return <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
       case 'Late':
         return <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
+      case 'Excused':
+        return <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />;
       default:
         return <Users className="h-5 w-5 text-muted-foreground" />;
     }
@@ -129,6 +107,12 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
             Late
           </Badge>
         );
+      case 'Excused':
+        return (
+          <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
+            Excused
+          </Badge>
+        );
       default:
         return (
           <Badge variant="outline" className="text-muted-foreground border-muted-foreground/50">
@@ -140,7 +124,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
 
   // Get the actual student count for each classroom
   const getActualStudentCount = (classroomId: string) => {
-    return MOCK_STUDENTS_DATA[classroomId]?.length || 0;
+    return mockStudentsData[classroomId]?.length || 0;
   };
 
   // Calculate attendance stats
@@ -149,10 +133,20 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
     present: students.filter(s => s.status === 'Present').length,
     absent: students.filter(s => s.status === 'Absent').length,
     late: students.filter(s => s.status === 'Late').length,
+    excused: students.filter(s => s.status === 'Excused').length,
     unmarked: students.filter(s => !s.status).length,
   };
 
   const isAllMarked = attendanceStats.unmarked === 0 && students.length > 0;
+
+  // Quick mark all functions
+  const markAllPresent = () => {
+    setStudents(prev => prev.map(student => ({ ...student, status: 'Present' as const })));
+  };
+
+  const clearAllMarks = () => {
+    setStudents(prev => prev.map(student => ({ ...student, status: undefined })));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -182,9 +176,33 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
             </Select>
           </div>
 
+          {/* Quick Actions */}
+          {students.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={markAllPresent}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Mark All Present
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllMarks}
+                className="flex items-center gap-2"
+              >
+                <XCircle className="h-4 w-4" />
+                Clear All
+              </Button>
+            </div>
+          )}
+
           {/* Attendance Stats */}
           {students.length > 0 && (
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
               <Card className="bg-muted/50">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-foreground">{attendanceStats.total}</div>
@@ -209,6 +227,12 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
                   <div className="text-sm text-yellow-600 dark:text-yellow-400">Late</div>
                 </CardContent>
               </Card>
+              <Card className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{attendanceStats.excused}</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">Excused</div>
+                </CardContent>
+              </Card>
               <Card className="bg-gray-50 dark:bg-gray-900/10 border-gray-200 dark:border-gray-800">
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{attendanceStats.unmarked}</div>
@@ -223,7 +247,7 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-foreground">
-                  Mark Attendance for Class {selectedClassroom}
+                  Mark Attendance for {selectedClassroom}
                 </h3>
                 {!isAllMarked && (
                   <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
@@ -242,41 +266,47 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           {getStatusIcon(student.status)}
                           <div className="min-w-0 flex-1">
-                            <p className="font-medium text-foreground text-lg">{student.name}</p>
-                            <div className="mt-1">
-                              {getStatusBadge(student.status)}
-                            </div>
+                            <p className="font-medium text-foreground truncate">{student.name}</p>
+                            <p className="text-sm text-muted-foreground">ID: {student.id}</p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {getStatusBadge(student.status)}
                           </div>
                         </div>
 
                         {/* Status Buttons */}
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 ml-4 flex-shrink-0">
                           <Button
-                            size="sm"
                             variant={student.status === 'Present' ? 'default' : 'outline'}
+                            size="sm"
                             onClick={() => updateStudentStatus(student.id, 'Present')}
-                            className="flex items-center gap-2 min-w-[90px] hover:scale-105 transition-transform"
+                            className={student.status === 'Present' ? 'bg-green-600 hover:bg-green-700 text-white' : 'hover:bg-green-50 hover:text-green-600'}
                           >
                             <CheckCircle className="h-4 w-4" />
-                            Present
                           </Button>
                           <Button
+                            variant={student.status === 'Absent' ? 'default' : 'outline'}
                             size="sm"
-                            variant={student.status === 'Late' ? 'default' : 'outline'}
-                            onClick={() => updateStudentStatus(student.id, 'Late')}
-                            className="flex items-center gap-2 min-w-[80px] hover:scale-105 transition-transform"
-                          >
-                            <Clock className="h-4 w-4" />
-                            Late
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={student.status === 'Absent' ? 'destructive' : 'outline'}
                             onClick={() => updateStudentStatus(student.id, 'Absent')}
-                            className="flex items-center gap-2 min-w-[80px] hover:scale-105 transition-transform"
+                            className={student.status === 'Absent' ? 'bg-red-600 hover:bg-red-700 text-white' : 'hover:bg-red-50 hover:text-red-600'}
                           >
                             <XCircle className="h-4 w-4" />
-                            Absent
+                          </Button>
+                          <Button
+                            variant={student.status === 'Late' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => updateStudentStatus(student.id, 'Late')}
+                            className={student.status === 'Late' ? 'bg-yellow-600 hover:bg-yellow-700 text-white' : 'hover:bg-yellow-50 hover:text-yellow-600'}
+                          >
+                            <Clock className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant={student.status === 'Excused' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => updateStudentStatus(student.id, 'Excused')}
+                            className={student.status === 'Excused' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'hover:bg-blue-50 hover:text-blue-600'}
+                          >
+                            <BookOpen className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -288,67 +318,50 @@ const TakeAttendanceModal = ({ isOpen, onClose, defaultClassroom, classrooms }: 
           )}
 
           {/* Empty State */}
-          {selectedClassroom && students.length === 0 && (
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg text-muted-foreground">No students found for this classroom</p>
-            </div>
-          )}
-
-          {/* No Classroom Selected */}
           {!selectedClassroom && (
-            <div className="text-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg text-muted-foreground">Please select a classroom to begin taking attendance</p>
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p className="text-lg font-medium mb-2">Select a Classroom</p>
+              <p>Choose a classroom from the dropdown above to start taking attendance.</p>
             </div>
           )}
 
-          {/* Info Note */}
-          {students.length > 0 && (
-            <Card className="bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <p className="font-medium mb-2">Attendance Guidelines:</p>
-                    <ul className="space-y-1 text-blue-700 dark:text-blue-300">
-                      <li>• Click "Present" for students who arrived on time</li>
-                      <li>• Click "Late" for students who arrived after the designated time</li>
-                      <li>• Click "Absent" for students who did not attend</li>
-                      <li>• Make sure to mark all students before saving</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {selectedClassroom && students.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+              <p className="text-lg font-medium mb-2">No Students Found</p>
+              <p>There are no students in the selected classroom.</p>
+            </div>
           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="p-6 pt-4 border-t border-border bg-muted/30">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              {students.length > 0 && (
-                <span>
-                  {isAllMarked
-                    ? "✅ All students marked"
-                    : `${attendanceStats.unmarked} of ${attendanceStats.total} students remaining`
-                  }
-                </span>
-              )}
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={onClose} className="min-w-[100px]">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveAttendance}
-                disabled={!selectedClassroom || students.length === 0}
-                className="min-w-[140px] bg-primary hover:bg-primary/90"
-              >
-                Save Attendance
-              </Button>
-            </div>
+        {/* Footer Actions */}
+        <div className="border-t border-border p-6 flex flex-col sm:flex-row gap-3 justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {students.length > 0 && (
+              <>
+                <span>Progress: {attendanceStats.total - attendanceStats.unmarked}/{attendanceStats.total} marked</span>
+                {isAllMarked && (
+                  <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>All students marked</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveAttendance}
+              disabled={!selectedClassroom || students.length === 0}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Save Attendance
+            </Button>
           </div>
         </div>
       </DialogContent>

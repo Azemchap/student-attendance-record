@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Filter, Plus, Search, Users, UserCheck, UserX, Clock } from 'lucide-react';
+import { Calendar, Filter, Plus, Search, Users, UserCheck, UserX, Clock, BookOpen } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 // Define the Student type
@@ -15,7 +15,7 @@ interface Student {
     name: string;
     class: string;
     date: string;
-    status: 'Present' | 'Absent' | 'Late';
+    status: 'Present' | 'Absent' | 'Late' | 'Excused';
 }
 
 // Define the type for mockStudentsData
@@ -23,54 +23,79 @@ interface MockStudentsData {
     [key: string]: Student[];
 }
 
+// Shared mock data that matches the modal
+const SHARED_MOCK_DATA = {
+    'FORM 1A': [
+        { id: 1, name: 'Alice Johnson' },
+        { id: 2, name: 'Bob Smith' },
+        { id: 5, name: 'Emma Brown' },
+        { id: 9, name: 'John Doe' },
+        { id: 10, name: 'Jane Wilson' },
+    ],
+    'FORM 2A': [
+        { id: 3, name: 'Carol Davis' },
+        { id: 4, name: 'David Wilson' },
+        { id: 11, name: 'Mike Johnson' },
+        { id: 12, name: 'Sarah Brown' },
+    ],
+    'FORM 3A': [
+        { id: 13, name: 'Robert Johnson' },
+        { id: 14, name: 'Lisa Anderson' },
+        { id: 15, name: 'Mark Davis' },
+        { id: 16, name: 'Anna Wilson' },
+    ],
+    'FORM 4A': [
+        { id: 17, name: 'Frank Miller' },
+        { id: 18, name: 'Grace Lee' },
+        { id: 19, name: 'Tom Anderson' },
+        { id: 20, name: 'Lisa Chen' },
+    ],
+    'FORM 4B': [
+        { id: 21, name: 'Henry Chen' },
+        { id: 22, name: 'Amy Davis' },
+        { id: 23, name: 'Peter Parker' },
+        { id: 24, name: 'Mary Johnson' },
+    ],
+    'FORM 5A': [
+        { id: 25, name: 'Robert Brown' },
+        { id: 26, name: 'Jennifer Wilson' },
+        { id: 27, name: 'Michael Davis' },
+    ],
+    'FORM 5B': [
+        { id: 28, name: 'Jessica Miller' },
+        { id: 29, name: 'Christopher Lee' },
+        { id: 30, name: 'Amanda Smith' },
+    ],
+};
+
 const Attendance = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClassroom, setSelectedClassroom] = useState<string>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [attendanceRecords, setAttendanceRecords] = useState<Student[]>([]);
 
-    // Memoize the mock students data
-    const mockStudentsData: MockStudentsData = useMemo(() => ({
-        'FORM 1A': [
-            { id: 1, name: 'Alice Johnson', class: 'FORM 1A', date: '2024-01-15', status: 'Present' },
-            { id: 2, name: 'Bob Smith', class: 'FORM 1A', date: '2024-01-15', status: 'Absent' },
-            { id: 5, name: 'Emma Brown', class: 'FORM 1A', date: '2024-01-15', status: 'Late' },
-            { id: 9, name: 'John Doe', class: 'FORM 1A', date: '2024-01-15', status: 'Present' },
-            { id: 10, name: 'Jane Wilson', class: 'FORM 1A', date: '2024-01-15', status: 'Absent' },
-        ],
-        'FORM 2A': [
-            { id: 3, name: 'Carol Davis', class: 'FORM 2A', date: '2024-01-15', status: 'Late' },
-            { id: 4, name: 'David Wilson', class: 'FORM 2A', date: '2024-01-15', status: 'Present' },
-            { id: 11, name: 'Mike Johnson', class: 'FORM 2A', date: '2024-01-15', status: 'Present' },
-            { id: 12, name: 'Sarah Brown', class: 'FORM 2A', date: '2024-01-15', status: 'Absent' },
-        ],
-        'FORM 3A': [
-            { id: 3, name: 'Carol Davis', class: 'FORM 3A', date: '2024-01-15', status: 'Late' },
-            { id: 4, name: 'David Wilson', class: 'FORM 3A', date: '2024-01-15', status: 'Present' },
-            { id: 11, name: 'Mike Johnson', class: 'FORM 3A', date: '2024-01-15', status: 'Present' },
-            { id: 12, name: 'Sarah Brown', class: 'FORM 3A', date: '2024-01-15', status: 'Absent' },
-        ],
-        'FORM 4B': [
-            { id: 6, name: 'Frank Miller', class: 'FORM 4B', date: '2024-01-15', status: 'Present' },
-            { id: 7, name: 'Grace Lee', class: 'FORM 4B', date: '2024-01-15', status: 'Present' },
-            { id: 13, name: 'Tom Anderson', class: 'FORM 4B', date: '2024-01-15', status: 'Late' },
-            { id: 14, name: 'Lisa Chen', class: 'FORM 4B', date: '2024-01-15', status: 'Present' },
-        ],
-        'FORM 4A': [
-            { id: 8, name: 'Henry Chen', class: 'FORM 4A', date: '2024-01-15', status: 'Present' },
-            { id: 15, name: 'Amy Davis', class: 'FORM 4A', date: '2024-01-15', status: 'Absent' },
-            { id: 16, name: 'Peter Parker', class: 'FORM 4A', date: '2024-01-15', status: 'Present' },
-        ],
-        'FORM 5A': [
-            { id: 17, name: 'Mary Johnson', class: 'FORM 5A', date: '2024-01-15', status: 'Present' },
-            { id: 18, name: 'Robert Brown', class: 'FORM 5A', date: '2024-01-15', status: 'Present' },
-            { id: 19, name: 'Jennifer Wilson', class: 'FORM 5A', date: '2024-01-15', status: 'Late' },
-        ],
-        'FORM 5B': [
-            { id: 20, name: 'Michael Davis', class: 'FORM 5B', date: '2024-01-15', status: 'Present' },
-            { id: 21, name: 'Jessica Miller', class: 'FORM 5B', date: '2024-01-15', status: 'Absent' },
-            { id: 22, name: 'Christopher Lee', class: 'FORM 5B', date: '2024-01-15', status: 'Present' },
-        ],
-    }), []);
+    // Generate mock attendance data with sample statuses
+    const mockStudentsData: MockStudentsData = useMemo(() => {
+        const currentDate = new Date().toISOString().split('T')[0];
+        const result: MockStudentsData = {};
+
+        Object.entries(SHARED_MOCK_DATA).forEach(([className, students]) => {
+            result[className] = students.map((student, index) => {
+                // Assign random statuses for demo purposes
+                const statuses: ('Present' | 'Absent' | 'Late' | 'Excused')[] = ['Present', 'Absent', 'Late', 'Excused'];
+                const randomStatus = statuses[index % statuses.length];
+
+                return {
+                    ...student,
+                    class: className,
+                    date: currentDate,
+                    status: randomStatus
+                };
+            });
+        });
+
+        return result;
+    }, []);
 
     const classrooms = useMemo(() =>
         Object.keys(mockStudentsData).map(classId => ({
@@ -106,6 +131,12 @@ const Attendance = () => {
                         Late
                     </Badge>
                 );
+            case 'Excused':
+                return (
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800">
+                        Excused
+                    </Badge>
+                );
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -125,10 +156,35 @@ const Attendance = () => {
         const presentStudents = filteredStudents.filter(student => student.status === 'Present').length;
         const absentStudents = filteredStudents.filter(student => student.status === 'Absent').length;
         const lateStudents = filteredStudents.filter(student => student.status === 'Late').length;
-        const attendanceRate = totalStudents ? (((presentStudents + lateStudents) / totalStudents) * 100).toFixed(1) : '0.0';
+        const excusedStudents = filteredStudents.filter(student => student.status === 'Excused').length;
+        const attendanceRate = totalStudents ? (((presentStudents + lateStudents + excusedStudents) / totalStudents) * 100).toFixed(1) : '0.0';
 
-        return { total: totalStudents, present: presentStudents, absent: absentStudents, late: lateStudents, attendanceRate };
+        return {
+            total: totalStudents,
+            present: presentStudents,
+            absent: absentStudents,
+            late: lateStudents,
+            excused: excusedStudents,
+            attendanceRate
+        };
     }, [filteredStudents]);
+
+    const handleAttendanceSaved = (classroomId: string, studentAttendance: any[]) => {
+        // Update the attendance records with the new data
+        const currentDate = new Date().toISOString().split('T')[0];
+        const newRecords = studentAttendance.map(student => ({
+            ...student,
+            class: classroomId,
+            date: currentDate
+        }));
+
+        // Here you would typically save to a database
+        console.log('Attendance saved for', classroomId, ':', newRecords);
+        setAttendanceRecords(prev => [
+            ...prev.filter(record => record.class !== classroomId || record.date !== currentDate),
+            ...newRecords
+        ]);
+    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -160,7 +216,7 @@ const Attendance = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                     <Card className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between">
@@ -216,6 +272,20 @@ const Attendance = () => {
                             </div>
                         </CardContent>
                     </Card>
+
+                    <Card className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Excused Today</p>
+                                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.excused}</p>
+                                </div>
+                                <div className="bg-blue-100 dark:bg-blue-900/20 rounded-full p-3">
+                                    <BookOpen className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 {/* Attendance Rate Card */}
@@ -226,7 +296,7 @@ const Attendance = () => {
                                 <p className="text-sm font-medium text-muted-foreground">Overall Attendance Rate</p>
                                 <p className="text-4xl font-bold text-primary">{stats.attendanceRate}%</p>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                    {stats.present + stats.late} out of {stats.total} students attended
+                                    {stats.present + stats.late + stats.excused} out of {stats.total} students attended
                                 </p>
                             </div>
                             <div className="bg-primary/10 rounded-full p-4">
@@ -291,6 +361,8 @@ const Attendance = () => {
                 onClose={() => setIsModalOpen(false)}
                 defaultClassroom={selectedClassroom === 'all' ? '' : selectedClassroom}
                 classrooms={classrooms}
+                mockStudentsData={SHARED_MOCK_DATA}
+                onAttendanceSaved={handleAttendanceSaved}
             />
         </div>
     );
