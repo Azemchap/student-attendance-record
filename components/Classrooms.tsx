@@ -165,11 +165,6 @@ const Classrooms = () => {
                                                     View Students
                                                 </Button>
                                             </Link>
-                                            <Link href={`/classrooms/${classroom.id}/attendance`}>
-                                                <Button variant="outline" size="sm">
-                                                    Attendance
-                                                </Button>
-                                            </Link>
                                         </div>
                                     </div>
                                 </CardContent>
