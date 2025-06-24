@@ -23,7 +23,7 @@ interface TakeAttendanceModalProps {
   onClose: () => void;
   defaultClassroom?: string;
   classrooms: Classroom[];
-  mockStudentsData: Record<string, { id: number; name: string }[]>;
+  studentsData: Record<string, { id: number; name: string }[]>;
   onAttendanceSaved?: (classroomId: string, students: Student[]) => void;
 }
 
@@ -32,7 +32,7 @@ const TakeAttendanceModal = ({
   onClose,
   defaultClassroom,
   classrooms,
-  mockStudentsData,
+  studentsData,
   onAttendanceSaved
 }: TakeAttendanceModalProps) => {
   const [selectedClassroom, setSelectedClassroom] = useState('');
@@ -41,25 +41,20 @@ const TakeAttendanceModal = ({
   // Set default classroom when modal opens
   useEffect(() => {
     if (isOpen) {
-      if (defaultClassroom) {
-        setSelectedClassroom(defaultClassroom);
-      } else if (classrooms.length > 0) {
-        // Auto-select the first classroom if no default is provided
-        setSelectedClassroom(classrooms[0].id);
-      }
+      setSelectedClassroom(defaultClassroom || (classrooms.length > 0 ? classrooms[0].id : ''));
     }
   }, [isOpen, defaultClassroom, classrooms]);
 
   useEffect(() => {
-    if (selectedClassroom && mockStudentsData[selectedClassroom]) {
-      setStudents(mockStudentsData[selectedClassroom].map(student => ({
+    if (selectedClassroom && studentsData[selectedClassroom]) {
+      setStudents(studentsData[selectedClassroom].map(student => ({
         ...student,
         status: undefined
       })));
     } else {
       setStudents([]);
     }
-  }, [selectedClassroom, mockStudentsData]);
+  }, [selectedClassroom, studentsData]);
 
   const updateStudentStatus = (studentId: number, status: 'Present' | 'Absent' | 'Late' | 'Excused') => {
     setStudents(prev => prev.map(student =>
@@ -80,7 +75,7 @@ const TakeAttendanceModal = ({
 
   // Get the actual student count for each classroom
   const getActualStudentCount = (classroomId: string) => {
-    return mockStudentsData[classroomId]?.length || 0;
+    return studentsData[classroomId]?.length || 0;
   };
 
   // Calculate attendance stats
@@ -169,8 +164,8 @@ const TakeAttendanceModal = ({
                   <SelectValue placeholder="Choose a classroom to start taking attendance" />
                 </SelectTrigger>
                 <SelectContent>
-                  {classrooms.map((classroom) => (
-                    <SelectItem key={classroom.id} value={classroom.id} className="text-base py-3">
+                  {classrooms.map((classroom, index) => (
+                    <SelectItem key={index} value={classroom.id} className="text-base py-3">
                       <div className="flex items-center justify-between w-full">
                         <span className="font-medium">{classroom.name}</span>
                         <Badge variant="secondary" className="ml-2">
@@ -294,8 +289,8 @@ const TakeAttendanceModal = ({
                     <Card
                       key={student.id}
                       className={`border-2 transition-all duration-300 hover:shadow-lg ${student.status
-                          ? 'border-primary/30 bg-primary/5'
-                          : 'border-gray-200 hover:border-primary/50 bg-white dark:bg-gray-900'
+                        ? 'border-primary/30 bg-primary/5'
+                        : 'border-gray-200 hover:border-primary/50 bg-white dark:bg-gray-900'
                         }`}
                     >
                       <CardContent className="p-6">
@@ -313,9 +308,9 @@ const TakeAttendanceModal = ({
                               <div className="flex-shrink-0">
                                 <Badge
                                   className={`px-3 py-1 text-sm font-medium ${student.status === 'Present' ? 'bg-green-100 text-green-800 border-green-300' :
-                                      student.status === 'Absent' ? 'bg-red-100 text-red-800 border-red-300' :
-                                        student.status === 'Late' ? 'bg-amber-100 text-amber-800 border-amber-300' :
-                                          'bg-blue-100 text-blue-800 border-blue-300'
+                                    student.status === 'Absent' ? 'bg-red-100 text-red-800 border-red-300' :
+                                      student.status === 'Late' ? 'bg-amber-100 text-amber-800 border-amber-300' :
+                                        'bg-blue-100 text-blue-800 border-blue-300'
                                     }`}
                                 >
                                   {student.status}
@@ -326,9 +321,9 @@ const TakeAttendanceModal = ({
 
                           {/* Status Buttons */}
                           <div className="flex gap-2 lg:gap-3 flex-wrap lg:flex-nowrap">
-                            {statusButtons.map(({ status, label, icon: Icon, activeClass, inactiveClass }) => (
+                            {statusButtons.map(({ status, label, icon: Icon, activeClass, inactiveClass, }, index) => (
                               <Button
-                                key={status}
+                                key={index}
                                 variant="outline"
                                 onClick={() => updateStudentStatus(student.id, status)}
                                 className={`

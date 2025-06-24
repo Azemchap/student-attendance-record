@@ -131,12 +131,6 @@ const Classrooms = () => {
                         {classrooms.map((classroom) => (
                             <Card key={classroom.id} className="hover:shadow-lg transition-shadow duration-300 dark:bg-gray-800">
                                 <CardHeader className="pb-3">
-                                    <div className="flex items-center justify-between">
-                                        <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                                        <Button variant="ghost" size="sm" className="p-1">
-                                            <Settings className="h-4 w-4" />
-                                        </Button>
-                                    </div>
                                     <CardTitle className="text-xl text-gray-900 dark:text-white">{classroom.name}</CardTitle>
                                 </CardHeader>
 
